@@ -1,10 +1,4 @@
-Introduction
-==============
+Java CSS Reference
+===========================
 
-JavaFX Cascading Style Sheets (CSS) is based on the W3C CSS version 2.1 [1] with some additions from current work on version 3 [2]. JavaFX CSS also has some extensions to CSS in support of specific JavaFX features. The goal for JavaFX CSS is to allow web developers already familiar with CSS for HTML to use CSS to customize and develop themes for JavaFX controls and scene graph objects in a natural way. The JavaFX CSS support and extensions have been designed to allow JavaFX CSS style sheets to be parsed cleanly by any compliant CSS parser, even though it might not support JavaFX extensions. This enables the mixing of CSS styles for JavaFX and for other purposes (such as for HTML pages) into a single style sheet. To this end, all JavaFX property names have been prefixed with a vendor extension of "-fx-". Even properties that might seem to be compatible with standard HTML CSS have been prefixed, because JavaFX has somewhat different semantics for their values.
-
-JavaFX CSS does not support CSS layout properties such as float, position, overflow, and width. However, the CSS padding and margins properties are supported on some JavaFX scene graph objects. All other aspects of layout are handled programmatically in JavaFX code. In addition, CSS support for HTML-specific elements such as Tables are not supported since there is no equivalent construct in JavaFX.
-
-JavaFX has a rich set of extensions to CSS in support of features such as color derivation, property lookup, and multiple background colors and borders for a single node. These features add significant new power for developers and designers and are described in detail in this document.
-
-The structure of this document is as follows. First, there is a description of all value types for JavaFX CSS properties.Where appropriate, this includes a grammar for the syntax of values of that type. Then, for each scene graph node that supports CSS styles, a table is given that lists the properties that are supported, along with type and semantic information. The pseudo-classes for each class are also given. The description of CSS properties continues for the controls. For each control, the substructure of that control's skin is given, along with the style class names for the Region objects that implement that substructure.
+Start here https://github.com/eugener/javafx-css-doc/wiki#introduction
