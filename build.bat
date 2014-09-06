@@ -1,1 +1,1 @@
-asciidoctor src/*.adoc -D .
+asciidoctor -a source-highlighter=highlightjs -D . src/*.adoc  

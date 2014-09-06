@@ -129,3 +129,12 @@ The cryptic `?[1,49]` pertains to the location of the error. The format of the l
 
 If the error is found while parsing a file, the file URL will be given. If the error is from an inline style (as in the example above), the URL is given as a question mark. The line and position give an offset into the file or string where the token begins. Please note that the line and position may not be accurate in releases prior to JavaFX 2.2.
 Applications needing to detect errors from the parser can add a listener to the errors property of com.sun.javafx.css.StyleManager. This is not public API and is subject to change. 
+
+
+== Types
+
+=== inherit
+
+Each property has a type, which determines what kind of value and the syntax for specifying those values. In addition, each property may have a specified value of 'inherit', which means that, for a given node, the property takes the same computed value as the property for the node's parent. The 'inherit' value can be used on properties that are not normally inherited.
+
+If the `inherit` value is set on the root element, the property is assigned its initial value.
