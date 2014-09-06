@@ -1,1 +1,1 @@
-asciidoctor adoc/*.adoc -D .
+asciidoctor src/*.adoc -D .
