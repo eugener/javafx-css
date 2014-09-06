@@ -1,0 +1,131 @@
+= JavaFX CSS Reference Guide
+:toc: left
+:toc-title: JavaFX CSS Reference Guide 
+:imagesdir: images
+
+== Introduction
+
+JavaFX Cascading Style Sheets (CSS) is based on the http://www.w3.org/TR/CSS21[W3C CSS version 2.1^] with some additions from current work on http://www.w3.org/Style/CSS/current-work[version 3^]. JavaFX CSS also has some extensions to CSS in support of specific JavaFX features. The goal for JavaFX CSS is to allow web developers already familiar with CSS for HTML to use CSS to customize and develop themes for JavaFX controls and scene graph objects in a natural way. The JavaFX CSS support and extensions have been designed to allow JavaFX CSS style sheets to be parsed cleanly by any compliant CSS parser, even though it might not support JavaFX extensions. This enables the mixing of CSS styles for JavaFX and for other purposes (such as for HTML pages) into a single style sheet. To this end, all JavaFX property names have been prefixed with a vendor extension of "-fx-". Even properties that might seem to be compatible with standard HTML CSS have been prefixed, because JavaFX has somewhat different semantics for their values.
+
+JavaFX CSS does not support CSS layout properties such as float, position, overflow, and width. However, the CSS padding and margins properties are supported on some JavaFX scene graph objects. All other aspects of layout are handled programmatically in JavaFX code. In addition, CSS support for HTML-specific elements such as Tables are not supported since there is no equivalent construct in JavaFX.
+
+JavaFX has a rich set of extensions to CSS in support of features such as color derivation, property lookup, and multiple background colors and borders for a single node. These features add significant new power for developers and designers and are described in detail in this document.
+
+The structure of this document is as follows. First, there is a description of all value types for JavaFX CSS properties.Where appropriate, this includes a grammar for the syntax of values of that type. Then, for each scene graph node that supports CSS styles, a table is given that lists the properties that are supported, along with type and semantic information. The pseudo-classes for each class are also given. The description of CSS properties continues for the controls. For each control, the substructure of that control's skin is given, along with the style class names for the Region objects that implement that substructure.
+
+<<<
+
+=== CSS and the JavaFX Scene Graph
+
+CSS styles are applied to nodes in the JavaFX scene graph in a way similar to the way CSS styles are applied to elements in the HTML DOM. Styles are first applied to the parent, then to its children. The code is written such that only those branches of the scene graph that might need CSS reapplied are visited. A node is styled after it is added to the scene graph. Styles are reapplied when there is a change to the node's pseudo-class state, style class, id, inline style, or parent. 
+CSS styles are applied asynchronously. That is, CSS styles are loaded and values are converted and assigned some time after a scene graph object has been created and added to the scene graph, but before the scene graph is first laid out and painted. In addition, if the styles that apply to an object have changed (for example, because its pseudo-class has changed), values from the newly applied styles will not be applied immediately. Instead, they will be applied sometime after the object's state has changed but before the scene is next painted. It is possible that a style might apply to a variable in a JavaFX object that had been assigned a value by a JavaFX program. Since CSS styles are applied asynchronously, it's possible that values might be assigned by a program and used for some time before being overwritten by CSS at an arbitrary time later.
+
+Each node in the scene graph has a styleClass variable, a List<String>. This is analogous to the class="..." attribute that can appear on HTML elements. Supplying a string for a node's styleClass variable causes style properties for that style class to applied to this node. Styles for style classes can be specified using the ".styleclass" selector syntax in a style sheet. Note that a node may have more than one style class.
+Each node in the scene graph has an id variable, a string. This is analogous to the id="..." attribute that can appear HTML elements. Supplying a string for a node's id variable causes style properties for this node to be looked up using that id. Styles for specific ids can be specified using the "#nodeid" selector syntax in a style sheet.
+
+Each node honors a set of properties that depends on the node's JavaFX class (as distinct from its styleClass). The properties honored by each node class are shown in detail in tables later in this document. The property value that is actually applied depends on the precedence of the origin of the rule, as described above, as well as the specificity of the rule's selector as described in http://www.w3.org/TR/CSS21[CSS 2^] . Ultimately, a property value string is converted into a JavaFX value of the appropriate type and is then assigned to an instance variable of the JavaFX object. 
+CSS styles can come from style sheets or inline styles. Style sheets are loaded from the URLs specified in the stylesheets variable of the Scene object. If the scene graph contains a Control, a default user agent style sheet is loaded. Inline styles are specified via the Node setStyle API. Inline styles are analogous to the style="..." attribute of an HTML element. Styles loaded from a Scene's style sheets take precedence over rules from the user agent style sheet. Inline styles take  precedence over styles originating elsewhere. The precedence order of style rules can be modified using "!important" in a style declaration. 
+
+Beginning with JavaFX 2.1, the Parent class has a stylesheets property, allowing style sheets to be set on a container. This allows for one branch of of the scene graph to have a distinct set of styles. Any instance of Parent can have a style sheets. A child will take its styles from its own inline styles, the style sheets of all its ancestors, and any style sheets from the Scene. 
+A style sheet URL may be an absolute URL or a relative URL. If a relative URL is given, it is resolved against the base URL of the ClassLoader of the concrete Application class. If, for example, there is a main class com.wicked.cool.ui.Main that extends Application, the relative URL "com/wicked/cool/resources/styles.css" would resolve correctly. The relative URL "../resources/styles.css" would not since the path ".." relative to the root is not a valid path. It is often easier to use the ClassLoader of some class to find the resource. For example, if the "styles.css" file resides in the same package as Main, the following code will give the correct URL: com.wicked.cool.ui.Main.class.getResource("styles.css").toExternalForm()
+
+Note that, beginning with JavaFX 2.1, a URL consisting of only an absolute path (having no scheme or authority) is resolved relative to the base URL of ClassLoader of the class that extends Application. In other words, "/com/wicked/cool/resources/styles.css" is treated as "com/wicked/cool/resources/styles.css". This is consistent with FXML. 
+The implementation allows designers to style an application by using style sheets to override property values set from code. This has implications for the cascade; particularly, when does a style from a style sheet override a value set from code? The JavaFX CSS implementation applies the following order of precedence; a style from a user agent style sheet has lower priority than a value set from code, which has lower priority than a Scene or Parent style sheet. Inline styles have highest precedence. Style sheets from a Parent instance are considered to be more specific than those styles from Scene style sheets.
+Naming conventions have been established for deriving CSS style class names from JavaFX class names, and for deriving CSS property names from JavaFX variable names. Note that this is only a naming convention; there is no automatic name conversion. Most JavaFX names use "camel case," that is, mixed case names formed from compound words, where the initial letter of each sub-word is capitalized. Most CSS names in the HTML world are all lower case, with compound words separated by hyphens. The convention is therefore to take JavaFX class names and form their corresponding CSS style class name by separating the compound words with hyphens and convering the letters to all lower case. For example, the JavaFX ToggleButton class would have a style class of "toggle-button". The convention for mapping JavaFX variable names to CSS property names is similar, with the addition of the "-fx-" prefix. For example, the blendMode variable would have a corresponding CSS property name of "-fx-blend-mode".
+
+=== Limitations
+
+While the JavaFX CSS parser will parse valid CSS syntax, it is not a fully compliant CSS parser. One should not expect the parser to handle syntax not specified in this document.
+
+* `@`-keyword statements are ignored.
+
+* The `:first-child` and `:lang` pseudo-classes are not supported. The `:first-line`, `:first-letter`, `:after`, and `:before` pseudo-elements are not supported.
+
+* The `:active` and `:focus` dynamic pseudo-classes are not supported. However, Nodes do support the `:pressed` and `:focused` pseudo-classes, which are similar.
+
+* The `:link` and `:visited` pseudo-classes are not supported in general. However, Hyperlink objects can be styled, and they support the `:visited` pseudo-class.
+
+* JavaFX CSS does not support comma-separated series of font family names in the `-fx-font-family` property. The optional line height parameter when specifying fonts is not supported. There is no equivalent for the `font-variant` property.
+
+* JavaFX CSS uses the HSB color model instead of the HSL color model.
+
+* It is possible to use the JavaFX class name as a type selector, however, such use is not recommended. For example, it is possible to specify styles for a ToggleButton using the syntax "ToggleButton { ... }". Such usage is not recommended because the name used to match the type selector is the actual concrete class name used in the JavaFX program. This class name can change in the case of subclassing. If the application were to subclass the ToggleButton class, these styles would no longer apply.
+
+* At this time, the programming interfaces necessary for a class to declare support for CSS properties, to convert and load these values from CSS style sheets into object variables, and to declare and notify changes to an object's pseudo-classes, are considered internal interfaces and are not accessible directly to applications.
+
+* If a property of a node is initialized by calling the set method of the property, the CSS implementation will see this as a user set value and the value will not be overwritten by a style from a user agent style sheet. 
+
+Inheritance
+
+CSS also provides for certain properties to be inherited by default, or to be inherited if the property value is `inherit`. If a value is inherited, it is inherited from the computed value of the element's parent in the document tree. In JavaFX, inheritance is similar, except that instead of elements in the document tree, inheritance occurs from parent nodes in the scene graph.
+
+The following properties inherit by default. Any property can be made to inherit by giving it the value `inherit`.
+
+[format="csv", options="header", float="left"]
+|===
+Class,Property,"CSS Property",Initial Value
+`javafx.scene.Node`,`cursor`,`-fx-cursor`,`javafx.scene.Cursor.DEFAULT`
+`javafx.scene.text.Text`,`textAlignment`,`-fx-text-alignment`,`javafx.scene.text.TextAlignment.LEFT`
+`javafx.scene.text.Font`,`font`,`-fx-font`,`Font.DEFAULT (12px system)`
+|===
+	
+
+Within the hierarchy of JavaFX classes (for example, Rectangle is a subclass of Shape, which in turn is a subclass of Node), the CSS properties of an ancestor are also CSS properties of the descendant. This means that a subclass will respond to the same set of properties as its ancestor classes, and to additional properties it defines itself. So, a Shape supports all the properties of Node plus several more, and Rectangle supports all the properties of Shape plus a couple more. However, because using a JavaFX class name as a type selector is an exact match, providing style declarations for a Shape will not cause a Rectangle to use those values (unless the .css value for the Rectangle's property is "inherit").
+
+=== Examples
+
+Consider the following simple JavaFX application:
+
+[source,java]
+----
+Scene scene = new Scene(new Group()); 
+scene.getStylesheets().add(“test.css”); 
+Rectangle rect = new Rectangle(100,100); 
+rect.setLayoutX(50); 
+rect.setLayoutY(50); 
+rect.getStyleClass().add("my-rect"); 
+((Group)scene.getRoot()).getChildren().add(rect);
+----
+
+Without any styles, this will display a plain black rectangle. If test.css contains the following:
+
+[source,css]
+----
+.my-rect { -fx-fill: red; }
+----
+
+the rectangle will be red instead of black:
+
+image::cssexample1.png[CSS Example 1]
+
+If test.css contains the following:
+
+[source,css]
+----
+.my-rect {
+    -fx-fill: yellow;
+    -fx-stroke: green;
+    -fx-stroke-width: 5;
+    -fx-stroke-dash-array: 12 2 4 2;
+    -fx-stroke-dash-offset: 6;
+    -fx-stroke-line-cap: butt;
+}
+----
+
+the result will be a yellow rectangle with a nicely dashed green border:
+
+image::cssexample2.png[]
+
+=== Understanding Parser Warnings
+
+When the JavaFX CSS parser encounters a syntax error, a warning message is emitted which conveys as much information as is available to help resolve the error. For example
+
+----
+WARNING: com.sun.javafx.css.parser.CSSParser declaration Expected '<percent>' while parsing '-fx-background-color' at ?[1,49]
+----
+
+The cryptic `?[1,49]` pertains to the location of the error. The format of the location string is
+`<url>[line, position]`
+
+If the error is found while parsing a file, the file URL will be given. If the error is from an inline style (as in the example above), the URL is given as a question mark. The line and position give an offset into the file or string where the token begins. Please note that the line and position may not be accurate in releases prior to JavaFX 2.2.
+Applications needing to detect errors from the parser can add a listener to the errors property of com.sun.javafx.css.StyleManager. This is not public API and is subject to change. 
