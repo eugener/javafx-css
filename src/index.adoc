@@ -2,6 +2,8 @@
 :toc: left
 :toc-title: JavaFX CSS Reference Guide 
 :imagesdir: images
+:stylesdir: stylesheets
+:source-highlighter: highlightjs
 
 == Introduction
 
@@ -120,6 +122,7 @@ image::cssexample2.png[]
 
 When the JavaFX CSS parser encounters a syntax error, a warning message is emitted which conveys as much information as is available to help resolve the error. For example
 
+[console]
 ----
 WARNING: com.sun.javafx.css.parser.CSSParser declaration Expected '<percent>' while parsing '-fx-background-color' at ?[1,49]
 ----
