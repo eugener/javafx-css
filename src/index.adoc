@@ -3,7 +3,8 @@
 :toc-title: JavaFX CSS Reference Guide 
 :toclevels: 2
 :imagesdir: images
-:stylesdir: stylesheets
+:stylesdir: ../stylesheets
+:stylesheet: asciidoctor-small.css
 :source-highlighter: highlightjs
 :icons: font
 :sectlink:
